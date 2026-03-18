@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { loginUser, getMe } from "@/apis/auth";
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
 
@@ -9,6 +10,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const router = useRouter();
 
   const login = async (email, password) => {
     const data = await loginUser(email, password);
@@ -18,17 +20,33 @@ export default function AuthProvider({ children }) {
 
     const me = await getMe();
     setUser(me.data);
+
+    // Auto redirect based on role
+    switch (me.data.role) {
+      case "ADMIN":
+        router.push("/dashboard/admin");
+        break;
+      case "STAFF":
+        router.push("/dashboard/staff");
+        break;
+      case "CUSTOMER":
+        router.push("/dashboard/customer");
+        break;
+      default:
+        router.push("/login");
+    }
   };
 
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     setUser(null);
+    router.push("/login");
   };
 
+  // Fetch logged in user on mount
   useEffect(() => {
     const token = localStorage.getItem("access");
-
     if (token) {
       getMe()
         .then((res) => setUser(res.data))

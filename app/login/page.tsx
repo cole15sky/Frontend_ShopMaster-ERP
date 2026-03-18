@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../AuthProvider";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, Store, ArrowRight, Loader2, Sparkles, ScanLine } from "lucide-react";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -15,14 +15,31 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // 🔹 Redirect if already logged in
+  useEffect(() => {
+    if (!user) return;
+    switch (user.role) {
+      case "ADMIN":
+        router.replace("/dashboard/admin");
+        break;
+      case "STAFF":
+        router.replace("/dashboard/staff");
+        break;
+      case "CUSTOMER":
+        router.replace("/dashboard/customer");
+        break;
+      default:
+        router.replace("/dashboard");
+    }
+  }, [user, router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      await login(email, password);
-      router.push("/dashboard");
+      await login(email, password); // login will redirect automatically based on role
     } catch (err) {
       setError("Authentication failed. Please check your credentials.");
       setLoading(false);
@@ -41,7 +58,6 @@ export default function LoginPage() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative z-10 w-full max-w-[1100px] grid lg:grid-cols-2 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl m-4 overflow-hidden"
       >
-        
         {/* Left Side: Visual Experience */}
         <div className="hidden lg:flex flex-col justify-between p-12 bg-gradient-to-br from-indigo-600/20 to-transparent border-r border-white/10">
           <div className="flex items-center gap-3">

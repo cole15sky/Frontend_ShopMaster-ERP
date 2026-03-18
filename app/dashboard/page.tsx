@@ -1,11 +1,32 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../AuthProvider";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const router = useRouter();
 
-  if (!user) return <p>Not logged in</p>;
+  useEffect(() => {
+    if (!user) return;
 
-  return <h1>Welcome {user.full_name}</h1>;
+    switch (user.role) {
+      case "ADMIN":
+        router.push("/dashboard/admin");
+        break;
+      case "MANAGER":
+        router.push("/dashboard/manager");
+        break;
+      case "STAFF":
+        router.push("/dashboard/staff");
+        break;
+      default:
+        router.push("/login");
+    }
+  }, [user]);
+
+  if (!user) return <p>Loading...</p>;
+
+  return <p>Redirecting...</p>;
 }
