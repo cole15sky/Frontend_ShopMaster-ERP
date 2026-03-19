@@ -1,8 +1,7 @@
 "use client";
 
 import { useAuth } from "../../AuthProvider";
-import ProtectedRoute from "@/app/components/ProtectedRoute";
-
+import ProtectedRoute from "@/components/ProtectedRoute";
 export default function AdminDashboard() {
   const { user } = useAuth();
 
