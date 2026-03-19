@@ -4,14 +4,16 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { loginUser, getMe } from "@/apis/auth";
 import { useRouter } from "next/navigation";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ important
   const router = useRouter();
 
+  // ✅ LOGIN
   const login = async (email, password) => {
     const data = await loginUser(email, password);
 
@@ -19,9 +21,10 @@ export default function AuthProvider({ children }) {
     localStorage.setItem("refresh", data.refresh);
 
     const me = await getMe();
+
     setUser(me.data);
 
-    // Auto redirect based on role
+    // redirect based on role
     switch (me.data.role) {
       case "ADMIN":
         router.push("/dashboard/admin");
@@ -37,6 +40,7 @@ export default function AuthProvider({ children }) {
     }
   };
 
+  // ✅ LOGOUT
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
@@ -44,18 +48,38 @@ export default function AuthProvider({ children }) {
     router.push("/login");
   };
 
-  // Fetch logged in user on mount
+  // ✅ AUTO LOGIN ON REFRESH
   useEffect(() => {
     const token = localStorage.getItem("access");
-    if (token) {
-      getMe()
-        .then((res) => setUser(res.data))
-        .catch(() => logout());
+
+    if (!token) {
+      setLoading(false);
+      return;
     }
+
+    getMe()
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch(() => {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false); // ✅ critical
+      });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        loading, // ✅ add this
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
