@@ -1,7 +1,6 @@
 "use client";
 
-import ProtectedRoute from "@/app/components/ProtectedRoute";
-
+import ProtectedRoute from "@/components/ProtectedRoute";
 export default function StaffDashboard() {
   return (
     <ProtectedRoute allowedRoles={["STAFF"]}>
