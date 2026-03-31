@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAuth } from "@/app/AuthProvider";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/features/auth/context";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function ProtectedRoute({
   children,
@@ -10,34 +10,34 @@ export default function ProtectedRoute({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (loading) return;
 
+    // Not logged in → go login (only if not already on the login page)
     if (!user) {
-      router.replace("/login");
+      if (pathname !== "/login") router.replace("/login");
       return;
     }
 
+    // Role not allowed → redirect properly (avoid redirecting if already on target)
     if (!allowedRoles.includes(user.role)) {
-      switch (user.role) {
-        case "ADMIN":
-          router.replace("/dashboard/admin");
-          break;
-        case "STAFF":
-          router.replace("/dashboard/staff");
-          break;
-        case "CUSTOMER":
-          router.replace("/dashboard/customer");
-          break;
-        default:
-          router.replace("/login");
-      }
-    }
-  }, [user, loading]);
+      const roleRoutes = {
+        ADMIN: "/dashboard/admin",
+        STAFF: "/dashboard/staff",
+        CUSTOMER: "/dashboard/customer",
+      };
 
+      const target = roleRoutes[user.role] || "/login";
+      if (pathname !== target) router.replace(target);
+    }
+  }, [user, loading, router, allowedRoles, pathname]);
+
+  //  WAIT for auth
   if (loading) return <p>Loading...</p>;
 
+  //  block render while redirecting
   if (!user) return null;
 
   if (!allowedRoles.includes(user.role)) return null;
