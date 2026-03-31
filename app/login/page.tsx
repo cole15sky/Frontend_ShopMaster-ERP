@@ -1,23 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "../AuthProvider";
+import { useAuth } from "@/features/auth/context";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, Store, ArrowRight, Loader2, Sparkles, ScanLine } from "lucide-react";
 
 export default function LoginPage() {
-  const { login, user } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   // 🔹 Redirect if already logged in
   useEffect(() => {
-    if (!user) return;
+    if (authLoading) return; // WAIT for auth to load
+
+    if (!user) return; // not logged in, show login page
+
+    // logged in → redirect
     switch (user.role) {
       case "ADMIN":
         router.replace("/dashboard/admin");
@@ -29,20 +33,21 @@ export default function LoginPage() {
         router.replace("/dashboard/customer");
         break;
       default:
-        router.replace("/dashboard");
+        // unknown role — send to login (avoid redirect loops)
+        router.replace("/login");
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setError("");
 
     try {
       await login(email, password); // login will redirect automatically based on role
     } catch (err) {
       setError("Authentication failed. Please check your credentials.");
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -155,21 +160,21 @@ export default function LoginPage() {
             </div>
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold py-4 rounded-[1.2rem] shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-            >
-              {loading ? (
+               whileHover={{ scale: 1.02 }}
+               whileTap={{ scale: 0.98 }}
+               type="submit"
+               disabled={submitting}
+               className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-bold py-4 rounded-[1.2rem] shadow-xl shadow-indigo-600/20 flex items-center justify-center gap-3 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+             >
+              {submitting ? (
                 <Loader2 className="animate-spin" size={20} />
               ) : (
-                <>
-                  Access Terminal
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </motion.button>
+                 <>
+                   Access Terminal
+                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                 </>
+               )}
+             </motion.button>
           </form>
 
           <div className="mt-8 text-center">
