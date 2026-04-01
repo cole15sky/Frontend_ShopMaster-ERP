@@ -36,7 +36,7 @@
     "types/**/*.ts",
     "**/*.mts",
     ".next/dev/types/**/*.ts"
-  ],
+, "features/products/hooks.js"  ],
   "exclude": [
     "node_modules"
   ]
