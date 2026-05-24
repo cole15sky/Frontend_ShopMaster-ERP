@@ -1,12 +1,23 @@
 import API from "@/lib/api";
 
-export const loginUser = async (email, password, role) => {
-  const res = await API.post("users/login/", { email, password, role });
+export const loginUser = async (email, password) => {
+  const res = await API.post("token/", {
+    email,
+    password,
+  });
+
+  if (!res.data?.access) {
+    throw new Error("Login failed: no token received");
+  }
+
   return res.data;
 };
 
 export const refreshToken = async (refresh) => {
-  const res = await API.post("token/refresh/", { refresh });
+  const res = await API.post("token/refresh/", {
+    refresh,
+  });
+
   return res.data;
 };
 

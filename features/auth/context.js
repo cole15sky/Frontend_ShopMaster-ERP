@@ -4,7 +4,12 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { loginUser, getMe } from "./api";
 import { useRouter } from "next/navigation";
 
-const AuthContext = createContext({ user: null, loading: true, login: async () => {}, logout: () => {} });
+const AuthContext = createContext({
+  user: null,
+  login: async () => {},
+  logout: () => {},
+  loading: true,
+});
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -13,37 +18,32 @@ export default function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  //  LOGIN
+  // LOGIN
   const login = async (email, password) => {
-    const data = await loginUser(email, password);
+    try {
+      const data = await loginUser(email, password);
 
-    // store tokens
-    localStorage.setItem("access", data.access ?? data.token ?? "");
-    localStorage.setItem("refresh", data.refresh ?? "");
+      localStorage.setItem("access", data.access);
+      localStorage.setItem("refresh", data.refresh);
 
-    // fetch user — support both res.data and direct object shapes
-    const me = await getMe();
-    const userObj = me?.data ?? me;
+      const me = await getMe();
+      const userObj = me?.data ?? me;
 
-    setUser(userObj);
+      setUser(userObj);
 
-    // redirect based on role (guard against missing role)
-    switch (userObj?.role) {
-      case "ADMIN":
-        router.push("/dashboard/admin");
-        break;
-      case "STAFF":
-        router.push("/dashboard/staff");
-        break;
-      case "CUSTOMER":
-        router.push("/dashboard/customer");
-        break;
-      default:
-        router.push("/login");
+      const role = userObj?.role;
+
+      if (role === "ADMIN") router.push("/dashboard/admin");
+      else if (role === "STAFF") router.push("/dashboard/staff");
+      else router.push("/dashboard/customer");
+
+    } catch (error) {
+      console.error("Login failed:", error);
+      logout();
     }
   };
 
-  //  LOGOUT
+  // LOGOUT
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
@@ -51,7 +51,7 @@ export default function AuthProvider({ children }) {
     router.push("/login");
   };
 
-  //  AUTO LOGIN
+  // AUTO LOGIN
   useEffect(() => {
     const token = localStorage.getItem("access");
 
@@ -62,13 +62,11 @@ export default function AuthProvider({ children }) {
 
     getMe()
       .then((res) => {
-        const u = res?.data ?? res;
-        setUser(u);
+        const userObj = res?.data ?? res;
+        setUser(userObj);
       })
       .catch(() => {
-        localStorage.removeItem("access");
-        localStorage.removeItem("refresh");
-        setUser(null);
+        logout();
       })
       .finally(() => {
         setLoading(false);
