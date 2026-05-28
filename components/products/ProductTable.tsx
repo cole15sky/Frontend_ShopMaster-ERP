@@ -2,12 +2,34 @@
 
 import { Edit2, Trash2, Package } from "lucide-react";
 
+// =========================
+// TYPES
+// =========================
+type Product = {
+  id: number | string;
+  name: string;
+  status?: string;
+  brand?: {
+    name?: string;
+  };
+  category?: {
+    name?: string;
+  };
+};
+
+type Props = {
+  products: Product[];
+  loading: boolean;
+  onEdit: (product: Product) => void;
+  onDelete: (id: number | string) => void;
+};
+
 export default function ProductTable({
   products,
   loading,
   onEdit,
   onDelete,
-}) {
+}: Props) {
   if (loading) {
     return (
       <div className="p-10 text-center text-slate-400">
@@ -18,7 +40,6 @@ export default function ProductTable({
 
   return (
     <div className="overflow-x-auto">
-
       <table className="w-full min-w-[700px]">
 
         {/* HEADER */}
@@ -34,13 +55,11 @@ export default function ProductTable({
 
         {/* BODY */}
         <tbody>
-
           {products.map((p) => (
             <tr
               key={p.id}
               className="border-b border-slate-800 hover:bg-slate-900/40"
             >
-
               <td className="p-4 flex items-center gap-3">
                 <Package size={16} className="text-indigo-400" />
                 {p.name}
@@ -67,7 +86,6 @@ export default function ProductTable({
               </td>
 
               <td className="text-right p-4 flex justify-end gap-2">
-
                 <button
                   onClick={() => onEdit(p)}
                   className="text-slate-400 hover:text-white"
@@ -81,16 +99,12 @@ export default function ProductTable({
                 >
                   <Trash2 size={16} />
                 </button>
-
               </td>
-
             </tr>
           ))}
-
         </tbody>
 
       </table>
-
     </div>
   );
 }

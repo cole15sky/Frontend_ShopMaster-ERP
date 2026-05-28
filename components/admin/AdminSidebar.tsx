@@ -11,20 +11,45 @@ import {
   CreditCard,
   QrCode,
   ShoppingCart,
-  ChevronDown,
-  ChevronRight,
   Settings,
-  PlusCircle,
-  List
+  ChevronDown,
 } from "lucide-react";
 
-// Define the structure for nested menu items
-const menuData = [
+/* =========================
+   TYPES (FIXED)
+========================= */
+
+type SubItem = {
+  title: string;
+  href: string;
+};
+
+type MenuItem = {
+  title: string;
+  href?: string;
+  icon?: any;
+  subItems?: SubItem[];
+};
+
+type MenuSection = {
+  title: string;
+  items: MenuItem[];
+};
+
+/* =========================
+   MENU DATA
+========================= */
+
+const menuData: MenuSection[] = [
   {
     title: "Main",
     items: [
-      { title: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    ]
+      {
+        title: "Dashboard",
+        href: "/dashboard/admin",
+        icon: LayoutDashboard,
+      },
+    ],
   },
   {
     title: "Operations",
@@ -33,156 +58,174 @@ const menuData = [
         title: "Sales",
         icon: ShoppingCart,
         subItems: [
-          { title: "All Orders", href: "/admin/sales" },
-          { title: "Invoices", href: "/admin/sales/invoices" },
-          { title: "POS Terminal", href: "/admin/sales/pos" },
-        ]
+          { title: "All Orders", href: "/dashboard/admin/sales" },
+          { title: "Invoices", href: "/dashboard/admin/sales/invoices" },
+          { title: "POS Terminal", href: "/dashboard/admin/sales/pos" },
+        ],
       },
       {
         title: "Inventory",
         icon: Package,
         subItems: [
-          { title: "Products", href: "/admin/inventory" },
-          { title: "Stock Alert", href: "/admin/inventory/alerts" },
-          { title: "Categories", href: "/admin/inventory/categories" },
-        ]
+          { title: "Products", href: "/dashboard/admin/inventory" },
+          { title: "Stock Alert", href: "/dashboard/admin/inventory/alerts" },
+          { title: "Categories", href: "/dashboard/admin/inventory/categories" },
+        ],
       },
       {
         title: "QR Manager",
         icon: QrCode,
         subItems: [
-          { title: "Generate QR", href: "/admin/qr/generate" },
-          { title: "Scan History", href: "/admin/qr/history" },
-        ]
-      }
-    ]
-  },
-  {
-    title: "Finance & Data",
-    items: [
-      {
-        title: "Payments",
-        icon: CreditCard,
-        subItems: [
-          { title: "Transactions", href: "/admin/payments" },
-          { title: "Gateways", href: "/admin/payments/gateways" },
-          { title: "Refunds", href: "/admin/payments/refunds" },
-        ]
+          { title: "Generate QR", href: "/dashboard/admin/qr/generate" },
+          { title: "Scan History", href: "/dashboard/admin/qr/history" },
+        ],
       },
-      {
-        title: "Analytics",
-        icon: BarChart3,
-        subItems: [
-          { title: "Revenue", href: "/admin/analytics/revenue" },
-          { title: "Reports", href: "/admin/analytics/reports" },
-        ]
-      }
-    ]
+    ],
   },
   {
     title: "System",
     items: [
-      { title: "Users", href: "/admin/users", icon: Users },
-      { title: "Settings", href: "/admin/settings", icon: Settings },
-    ]
-  }
+      {
+        title: "Users",
+        href: "/dashboard/admin/users",
+        icon: Users,
+      },
+      {
+        title: "Analytics",
+        href: "/dashboard/admin/analytics",
+        icon: BarChart3,
+      },
+      {
+        title: "Payments",
+        href: "/dashboard/admin/payments",
+        icon: CreditCard,
+      },
+      {
+        title: "Settings",
+        href: "/dashboard/admin/settings",
+        icon: Settings,
+      },
+    ],
+  },
 ];
+
+/* =========================
+   COMPONENT
+========================= */
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
   const toggleMenu = (title: string) => {
-    setOpenMenus((prev) => ({ ...prev, [title]: !prev[title] }));
+    setOpenMenus((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
   };
 
   return (
-    <aside className="w-64 h-screen bg-[#0f172a] text-slate-300 flex flex-col border-r border-slate-800 shadow-xl">
-      
-      {/* Brand */}
-      <div className="h-20 flex items-center px-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-            <Package size={22} />
-          </div>
-          <span className="text-xl font-bold text-white tracking-tight">ERP<span className="text-indigo-500">Flux</span></span>
-        </div>
+    <aside className="w-64 h-screen bg-[#0f172a] text-slate-300 flex flex-col border-r border-slate-800">
+
+      {/* BRAND */}
+      <div className="h-20 flex items-center px-6 text-white font-bold text-xl">
+        ERP<span className="text-indigo-500">Flux</span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 overflow-y-auto py-4 space-y-6 scrollbar-hide">
+      {/* MENU */}
+      <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+
         {menuData.map((section) => (
           <div key={section.title}>
-            <h2 className="px-3 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-500 mb-2">
+            <h2 className="text-xs uppercase text-slate-500 mb-2 px-2">
               {section.title}
             </h2>
+
             <div className="space-y-1">
+
               {section.items.map((item) => {
                 const Icon = item.icon;
-                const hasSubItems = !!item.subItems;
+                const hasSubItems = !!item.subItems?.length;
                 const isOpen = openMenus[item.title];
-                const isActive = pathname === item.href || item.subItems?.some(sub => pathname === sub.href);
+
+                const isActive =
+                  pathname === item.href ||
+                  item.subItems?.some((sub) => sub.href === pathname);
 
                 return (
                   <div key={item.title}>
+
+                    {/* MAIN ITEM */}
                     {hasSubItems ? (
-                      /* Dropdown Trigger */
                       <button
                         onClick={() => toggleMenu(item.title)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 group
-                          ${isActive ? "text-white" : "hover:bg-slate-800/50 hover:text-white"}`}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition
+                          ${isActive ? "text-white bg-slate-800" : "hover:bg-slate-800/50"}`}
                       >
                         <div className="flex items-center gap-3">
-                          <Icon size={18} className={isActive ? "text-indigo-400" : "text-slate-400 group-hover:text-slate-200"} />
-                          <span className="text-sm font-medium">{item.title}</span>
+                          {Icon && (
+                            <Icon
+                              size={18}
+                              className="text-slate-400"
+                            />
+                          )}
+                          <span className="text-sm">{item.title}</span>
                         </div>
-                        <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+
+                        <ChevronDown
+                          size={16}
+                          className={`transition-transform ${
+                            isOpen ? "rotate-180" : ""
+                          }`}
+                        />
                       </button>
                     ) : (
-                      /* Standard Link */
                       <Link
                         href={item.href!}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all 
-                          ${pathname === item.href ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20" : "hover:bg-slate-800/50 hover:text-white"}`}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition
+                          ${pathname === item.href ? "bg-indigo-600 text-white" : "hover:bg-slate-800/50"}`}
                       >
-                        <Icon size={18} />
-                        <span className="text-sm font-medium">{item.title}</span>
+                        {Icon && <Icon size={18} />}
+                        {item.title}
                       </Link>
                     )}
 
-                    {/* Sub-menu Items */}
+                    {/* SUB ITEMS (FIXED SAFE MAP) */}
                     {hasSubItems && isOpen && (
-                      <div className="mt-1 ml-4 pl-3 border-l border-slate-800 space-y-1 animate-in slide-in-from-top-1 duration-200">
-                        {item.subItems!.map((sub) => (
+                      <div className="ml-6 mt-1 pl-3 border-l border-slate-700 space-y-1">
+
+                        {(item.subItems ?? []).map((sub) => (
                           <Link
                             key={sub.href}
                             href={sub.href}
-                            className={`block px-3 py-2 text-xs rounded-md transition-colors
-                              ${pathname === sub.href ? "text-indigo-400 font-semibold" : "text-slate-500 hover:text-white"}`}
+                            className={`block text-sm px-2 py-1 rounded transition
+                              ${pathname === sub.href
+                                ? "text-indigo-400 font-semibold"
+                                : "text-slate-400 hover:text-white"
+                              }`}
                           >
                             {sub.title}
                           </Link>
                         ))}
+
                       </div>
                     )}
+
                   </div>
                 );
               })}
+
             </div>
           </div>
         ))}
+
       </nav>
 
-      {/* Footer Profile */}
-      <div className="p-4 bg-slate-900/50 border-t border-slate-800">
-        <div className="flex items-center gap-3 p-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-white truncate">Alex Rivera</p>
-            <p className="text-[10px] text-slate-500 truncate uppercase tracking-wider">Super Admin</p>
-          </div>
-        </div>
+      {/* FOOTER */}
+      <div className="p-4 border-t border-slate-800 text-sm text-slate-400">
+        Admin Panel
       </div>
+
     </aside>
   );
 }

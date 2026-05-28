@@ -2,25 +2,45 @@
 
 import { useEffect, useState } from "react";
 import API from "@/lib/api";
-
-import {
-  Save,
-  Plus,
-  Trash2,
-  Package2,
-} from "lucide-react";
-
+import { Save, Plus, Trash2, Package2 } from "lucide-react";
 import { createVariant } from "@/features/variants/api";
+
+// =============================
+// TYPES
+// =============================
+type Product = {
+  id?: number | string;
+  name?: string;
+  brand?: { id: string };
+  category?: { id: string };
+  gender?: string;
+  status?: string;
+  description?: string;
+};
+
+type Variant = {
+  size: string;
+  color: string;
+  sku: string;
+  price: string;
+  discount_price?: string;
+  gender: string;
+};
+
+type Props = {
+  product?: Product | null;
+  onSave: (data: any) => Promise<any>;
+  onClose: () => void;
+};
 
 export default function ProductForm({
   product,
   onSave,
   onClose,
-}) {
-
-  // =========================================
+}: Props) {
+  // =========================
   // MAIN PRODUCT FORM
-  // =========================================
+  // =========================
   const [form, setForm] = useState({
     name: "",
     brand_id: "",
@@ -30,18 +50,21 @@ export default function ProductForm({
     description: "",
   });
 
-  // =========================================
+  // =========================
   // LOOKUPS
-  // =========================================
-  const [options, setOptions] = useState({
+  // =========================
+  const [options, setOptions] = useState<{
+    brands: any[];
+    categories: any[];
+  }>({
     brands: [],
     categories: [],
   });
 
-  // =========================================
+  // =========================
   // VARIANTS
-  // =========================================
-  const [variants, setVariants] = useState([
+  // =========================
+  const [variants, setVariants] = useState<Variant[]>([
     {
       size: "",
       color: "",
@@ -54,44 +77,34 @@ export default function ProductForm({
 
   const [loading, setLoading] = useState(false);
 
-  // =========================================
+  // =========================
   // LOAD BRANDS + CATEGORIES
-  // =========================================
+  // =========================
   useEffect(() => {
-
     const load = async () => {
-
       try {
-
-        const [brandsRes, categoriesRes] =
-          await Promise.all([
-            API.get("/products/brands/"),
-            API.get("/products/categories/"),
-          ]);
+        const [brandsRes, categoriesRes] = await Promise.all([
+          API.get("/products/brands/"),
+          API.get("/products/categories/"),
+        ]);
 
         setOptions({
           brands: brandsRes.data,
           categories: categoriesRes.data,
         });
-
       } catch (err) {
-
         console.error("Lookup Error:", err);
-
       }
     };
 
     load();
-
   }, []);
 
-  // =========================================
+  // =========================
   // EDIT MODE
-  // =========================================
+  // =========================
   useEffect(() => {
-
     if (product) {
-
       setForm({
         name: product.name || "",
         brand_id: product.brand?.id || "",
@@ -101,14 +114,12 @@ export default function ProductForm({
         description: product.description || "",
       });
     }
-
   }, [product]);
 
-  // =========================================
+  // =========================
   // ADD VARIANT
-  // =========================================
+  // =========================
   const addVariant = () => {
-
     setVariants([
       ...variants,
       {
@@ -120,47 +131,37 @@ export default function ProductForm({
         gender: form.gender,
       },
     ]);
-
   };
 
-  // =========================================
+  // =========================
   // REMOVE VARIANT
-  // =========================================
-  const removeVariant = (index) => {
-
-    setVariants(
-      variants.filter((_, i) => i !== index)
-    );
-
+  // =========================
+  const removeVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index));
   };
 
-  // =========================================
-  // HANDLE VARIANT CHANGE
-  // =========================================
-  const updateVariant = (index, field, value) => {
-
+  // =========================
+  // UPDATE VARIANT
+  // =========================
+  const updateVariant = (
+    index: number,
+    field: keyof Variant,
+    value: string
+  ) => {
     const updated = [...variants];
-
     updated[index][field] = value;
-
     setVariants(updated);
-
   };
 
-  // =========================================
+  // =========================
   // SUBMIT
-  // =========================================
-  const handleSubmit = async (e) => {
-
+  // =========================
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-
       setLoading(true);
 
-      // =========================
-      // CREATE PRODUCT
-      // =========================
       const createdProduct = await onSave({
         name: form.name,
         brand_id: form.brand_id || null,
@@ -170,443 +171,143 @@ export default function ProductForm({
         description: form.description,
       });
 
-      // =========================
-      // CREATE VARIANTS
-      // =========================
-      const validVariants =
-        variants.filter(
-          (v) =>
-            v.sku &&
-            v.price
-        );
+      const validVariants = variants.filter((v) => v.sku && v.price);
 
       await Promise.all(
-
         validVariants.map((variant) =>
-
           createVariant({
             product: createdProduct.id,
             size: variant.size || null,
             color: variant.color || null,
             sku: variant.sku,
             price: variant.price,
-            discount_price:
-              variant.discount_price || null,
+            discount_price: variant.discount_price || null,
             gender: form.gender,
             is_active: true,
           })
-
         )
-
       );
 
       onClose();
-
     } catch (err) {
-
       console.error("Save Error:", err);
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
   return (
-
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-8"
-    >
-
-      {/* ===================================== */}
-      {/* HEADER */}
-      {/* ===================================== */}
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div>
-
         <h2 className="text-2xl font-black text-white">
-          {product
-            ? "Edit Product"
-            : "Create Product"}
+          {product ? "Edit Product" : "Create Product"}
         </h2>
 
         <p className="text-slate-500 text-sm mt-1">
-          Manage products and variants
-          inside one workflow.
+          Manage products and variants inside one workflow.
         </p>
-
       </div>
 
-      {/* ===================================== */}
-      {/* PRODUCT SECTION */}
-      {/* ===================================== */}
+      {/* PRODUCT FORM */}
       <div className="space-y-5">
+        <input
+          required
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          placeholder="Product Name"
+          className="w-full bg-slate-900 px-4 py-3 rounded-xl text-white"
+        />
 
-        <div>
-
-          <label className="block text-sm mb-2 text-slate-400">
-            Product Name
-          </label>
-
-          <input
-            required
-            value={form.name}
+        <div className="grid grid-cols-2 gap-4">
+          <select
+            value={form.brand_id}
             onChange={(e) =>
-              setForm({
-                ...form,
-                name: e.target.value,
-              })
+              setForm({ ...form, brand_id: e.target.value })
             }
-            placeholder="Nike Air Max"
-            className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white outline-none focus:border-indigo-500"
-          />
-
-        </div>
-
-        {/* BRAND + CATEGORY */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          <div>
-
-            <label className="block text-sm mb-2 text-slate-400">
-              Brand
-            </label>
-
-            <select
-              value={form.brand_id}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  brand_id: e.target.value,
-                })
-              }
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white"
-            >
-
-              <option value="">
-                Select Brand
-              </option>
-
-              {options.brands.map((brand) => (
-
-                <option
-                  key={brand.id}
-                  value={brand.id}
-                >
-                  {brand.name}
-                </option>
-
-              ))}
-
-            </select>
-
-          </div>
-
-          <div>
-
-            <label className="block text-sm mb-2 text-slate-400">
-              Category
-            </label>
-
-            <select
-              value={form.category_id}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  category_id: e.target.value,
-                })
-              }
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white"
-            >
-
-              <option value="">
-                Select Category
-              </option>
-
-              {options.categories.map((category) => (
-
-                <option
-                  key={category.id}
-                  value={category.id}
-                >
-                  {category.name}
-                </option>
-
-              ))}
-
-            </select>
-
-          </div>
-
-        </div>
-
-        {/* GENDER + STATUS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          <div>
-
-            <label className="block text-sm mb-2 text-slate-400">
-              Gender
-            </label>
-
-            <select
-              value={form.gender}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  gender: e.target.value,
-                })
-              }
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white"
-            >
-
-              <option value="UNISEX">
-                Unisex
-              </option>
-
-              <option value="MEN">
-                Men
-              </option>
-
-              <option value="WOMEN">
-                Women
-              </option>
-
-            </select>
-
-          </div>
-
-          <div>
-
-            <label className="block text-sm mb-2 text-slate-400">
-              Status
-            </label>
-
-            <select
-              value={form.status}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  status: e.target.value,
-                })
-              }
-              className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white"
-            >
-
-              <option value="ACTIVE">
-                Active
-              </option>
-
-              <option value="INACTIVE">
-                Inactive
-              </option>
-
-              <option value="DRAFT">
-                Draft
-              </option>
-
-            </select>
-
-          </div>
-
-        </div>
-
-        {/* DESCRIPTION */}
-        <div>
-
-          <label className="block text-sm mb-2 text-slate-400">
-            Description
-          </label>
-
-          <textarea
-            rows={4}
-            value={form.description}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                description: e.target.value,
-              })
-            }
-            placeholder="Premium running shoe..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-white resize-none"
-          />
-
-        </div>
-
-      </div>
-
-      {/* ===================================== */}
-      {/* VARIANT SECTION */}
-      {/* ===================================== */}
-      <div className="space-y-5">
-
-        <div className="flex items-center justify-between">
-
-          <div className="flex items-center gap-3">
-
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
-              <Package2 size={18} />
-            </div>
-
-            <div>
-
-              <h3 className="text-lg font-bold text-white">
-                Product Variants
-              </h3>
-
-              <p className="text-slate-500 text-sm">
-                Add sizes, prices, and SKU
-              </p>
-
-            </div>
-
-          </div>
-
-          <button
-            type="button"
-            onClick={addVariant}
-            className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold"
+            className="bg-slate-900 p-3 rounded-xl text-white"
           >
-            <Plus size={16} />
-          </button>
+            <option value="">Select Brand</option>
+            {options.brands.map((b: any) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
 
+          <select
+            value={form.category_id}
+            onChange={(e) =>
+              setForm({ ...form, category_id: e.target.value })
+            }
+            className="bg-slate-900 p-3 rounded-xl text-white"
+          >
+            <option value="">Select Category</option>
+            {options.categories.map((c: any) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        {/* VARIANT LIST */}
-        <div className="space-y-4">
-
-          {variants.map((variant, index) => (
-
-            <div
-              key={index}
-              className="grid grid-cols-1 md:grid-cols-5 gap-3 bg-slate-900/50 border border-slate-800 rounded-2xl p-4"
-            >
-
-              {/* SIZE */}
-              <select
-                value={variant.size}
-                onChange={(e) =>
-                  updateVariant(
-                    index,
-                    "size",
-                    e.target.value
-                  )
-                }
-                className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white"
-              >
-
-                <option value="">
-                  Size
-                </option>
-
-                <option value="X">
-                  X
-                </option>
-
-                <option value="XL">
-                  XL
-                </option>
-
-                <option value="XXL">
-                  XXL
-                </option>
-
-              </select>
-
-              {/* COLOR */}
-              <input
-                placeholder="Color"
-                value={variant.color}
-                onChange={(e) =>
-                  updateVariant(
-                    index,
-                    "color",
-                    e.target.value
-                  )
-                }
-                className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white"
-              />
-
-              {/* SKU */}
-              <input
-                required
-                placeholder="SKU"
-                value={variant.sku}
-                onChange={(e) =>
-                  updateVariant(
-                    index,
-                    "sku",
-                    e.target.value
-                  )
-                }
-                className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white"
-              />
-
-              {/* PRICE */}
-              <input
-                required
-                type="number"
-                placeholder="Price"
-                value={variant.price}
-                onChange={(e) =>
-                  updateVariant(
-                    index,
-                    "price",
-                    e.target.value
-                  )
-                }
-                className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-3 text-white"
-              />
-
-              {/* REMOVE */}
-              <button
-                type="button"
-                onClick={() =>
-                  removeVariant(index)
-                }
-                className="rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 flex items-center justify-center"
-              >
-                <Trash2 size={18} />
-              </button>
-
-            </div>
-
-          ))}
-
-        </div>
-
+        <textarea
+          value={form.description}
+          onChange={(e) =>
+            setForm({ ...form, description: e.target.value })
+          }
+          className="w-full bg-slate-900 p-3 rounded-xl text-white"
+        />
       </div>
 
-      {/* ===================================== */}
-      {/* ACTIONS */}
-      {/* ===================================== */}
-      <div className="flex gap-3 pt-2">
+      {/* VARIANTS */}
+      <div className="space-y-4">
+        {variants.map((v, i) => (
+          <div key={i} className="flex gap-2">
+            <input
+              placeholder="SKU"
+              value={v.sku}
+              onChange={(e) =>
+                updateVariant(i, "sku", e.target.value)
+              }
+              className="bg-slate-900 p-2 rounded"
+            />
+
+            <input
+              placeholder="Price"
+              value={v.price}
+              onChange={(e) =>
+                updateVariant(i, "price", e.target.value)
+              }
+              className="bg-slate-900 p-2 rounded"
+            />
+
+            <button
+              type="button"
+              onClick={() => removeVariant(i)}
+              className="text-red-400"
+            >
+              <Trash2 />
+            </button>
+          </div>
+        ))}
 
         <button
           type="button"
-          onClick={onClose}
-          className="flex-1 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl py-4 font-semibold"
+          onClick={addVariant}
+          className="text-indigo-400"
         >
-          Cancel
+          <Plus /> Add Variant
         </button>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex-[2] bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl py-4 font-bold flex items-center justify-center gap-2"
-        >
-
-          <Save size={18} />
-
-          {loading
-            ? "Creating..."
-            : "Create Product"}
-
-        </button>
-
       </div>
 
+      {/* ACTIONS */}
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-indigo-600 text-white px-6 py-3 rounded-xl"
+      >
+        <Save /> {loading ? "Saving..." : "Save Product"}
+      </button>
     </form>
   );
 }
