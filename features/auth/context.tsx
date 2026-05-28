@@ -3,8 +3,17 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { loginUser, getMe } from "./api";
 import { useRouter } from "next/navigation";
+import type { User } from "@/types/user";
 
-const AuthContext = createContext({
+type AuthContextType = {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
+};
+
+// ✅ FIXED CONTEXT (this removes `never` issue)
+const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => {},
   logout: () => {},
@@ -13,13 +22,13 @@ const AuthContext = createContext({
 
 export const useAuth = () => useContext(AuthContext);
 
-export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   // LOGIN
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     try {
       const data = await loginUser(email, password);
 
@@ -27,7 +36,7 @@ export default function AuthProvider({ children }) {
       localStorage.setItem("refresh", data.refresh);
 
       const me = await getMe();
-      const userObj = me?.data ?? me;
+      const userObj: User = me?.data ?? me;
 
       setUser(userObj);
 
@@ -62,7 +71,7 @@ export default function AuthProvider({ children }) {
 
     getMe()
       .then((res) => {
-        const userObj = res?.data ?? res;
+        const userObj: User = res?.data ?? res;
         setUser(userObj);
       })
       .catch(() => {

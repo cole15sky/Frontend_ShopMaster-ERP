@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: LayoutProps) {
       return;
     }
 
-    if (user.role !== "ADMIN") {
+    if (!user || user.role !== "ADMIN"){
       const roleRoutes: Record<string, string> = {
         STAFF: "/dashboard/staff",
         CUSTOMER: "/dashboard/customer",
@@ -30,9 +30,13 @@ export default function AdminLayout({ children }: LayoutProps) {
     }
   }, [user, loading, router]);
 
-  if (loading || !user || user.role !== "ADMIN") {
-    return <p>Loading...</p>;
-  }
+if (loading || !user) {
+  return <p>Loading...</p>;
+}
+
+if (user.role !== "ADMIN") {
+  return <p>Loading...</p>;
+}
 
   return (
     <div className="flex min-h-screen">
