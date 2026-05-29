@@ -1,26 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  getProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-} from "./api";
+import { getProducts, createProduct, updateProduct, deleteProduct } from "./api";
 import { mapProductPayload } from "./mapper";
 
 export function useProducts() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const data = await getProducts();
-
-      // ✅ normalize response
       const normalized = data?.results ?? data ?? [];
-
       setProducts(Array.isArray(normalized) ? normalized : []);
     } catch (err) {
       console.error("Fetch error:", err);
@@ -30,18 +22,17 @@ export function useProducts() {
     }
   };
 
-  const addProduct = async (formData) => {
+  const addProduct = async (formData: any) => {
     try {
       const payload = mapProductPayload(formData);
-      await createProduct(payload);
-      await fetchProducts();
-    } catch (err) {
+      return await createProduct(payload);
+    } catch (err: any) {
       console.error("Add product error:", err);
       alert(err?.detail || "Failed to create product");
     }
   };
 
-  const editProduct = async (id, formData) => {
+  const editProduct = async (id: string | number, formData: any) => {
     try {
       const payload = mapProductPayload(formData);
       await updateProduct(id, payload);
@@ -52,7 +43,7 @@ export function useProducts() {
     }
   };
 
-  const removeProduct = async (id) => {
+  const removeProduct = async (id: string | number) => {
     try {
       await deleteProduct(id);
       await fetchProducts();
@@ -66,12 +57,5 @@ export function useProducts() {
     fetchProducts();
   }, []);
 
-  return {
-    products,
-    loading,
-    addProduct,
-    editProduct,
-    removeProduct,
-    refresh: fetchProducts,
-  };
+  return { products, loading, addProduct, editProduct, removeProduct, refresh: fetchProducts };
 }

@@ -4,7 +4,6 @@ const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
-// Attach token automatically
 API.interceptors.request.use((config) => {
   const token = typeof window !== "undefined" ? localStorage.getItem("access") : null;
 

@@ -1,31 +1,26 @@
 import API from "@/lib/api";
 
-// GET ALL VARIANTS
 export const getVariants = async () => {
   const res = await API.get("/variants/");
   return res.data;
 };
 
-// GET SINGLE VARIANT
-export const getVariant = async (id) => {
+export const getVariant = async (id: string | number) => {
   const res = await API.get(`/variants/${id}/`);
   return res.data;
 };
 
-// CREATE VARIANT
-export const createVariant = async (data) => {
+export const createVariant = async (data: Record<string, unknown>) => {
   const res = await API.post("/variants/", data);
   return res.data;
 };
 
-// UPDATE VARIANT
-export const updateVariant = async (id, data) => {
+export const updateVariant = async (id: string | number, data: Record<string, unknown>) => {
   const res = await API.put(`/variants/${id}/`, data);
   return res.data;
 };
 
-// DELETE VARIANT
-export const deleteVariant = async (id) => {
+export const deleteVariant = async (id: string | number) => {
   const res = await API.delete(`/variants/${id}/`);
   return res.data;
 };

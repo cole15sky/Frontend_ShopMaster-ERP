@@ -1,42 +1,35 @@
 import API from "@/lib/api";
 
-// GET ALL PRODUCTS
 export const getProducts = async () => {
   const res = await API.get("products/");
   return res.data;
 };
 
-// GET SINGLE PRODUCT
-export const getProduct = async (id) => {
+export const getProduct = async (id: string | number) => {
   const res = await API.get(`products/${id}/`);
   return res.data;
 };
 
-// CREATE PRODUCT
-export const createProduct = async (data) => {
+export const createProduct = async (data: Record<string, unknown>) => {
   const res = await API.post("products/", data);
   return res.data;
 };
 
-// UPDATE PRODUCT
-export const updateProduct = async (id, data) => {
+export const updateProduct = async (id: string | number, data: Record<string, unknown>) => {
   const res = await API.put(`products/${id}/`, data);
   return res.data;
 };
 
-// DELETE PRODUCT
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (id: string | number) => {
   const res = await API.delete(`products/${id}/`);
   return res.data;
 };
 
-// VARIANTS
-export const getProductVariants = async (id) => {
+export const getProductVariants = async (id: string | number) => {
   const res = await API.get(`products/${id}/variants/`);
   return res.data;
 };
 
-// LOOKUPS
 export const getBrands = async () => {
   const res = await API.get("products/brands/");
   return res.data;
