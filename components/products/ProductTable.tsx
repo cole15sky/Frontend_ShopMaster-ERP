@@ -6,22 +6,18 @@ import { Edit2, Trash2, Package } from "lucide-react";
 // TYPES
 // =========================
 type Product = {
-  id: number | string;
+  id: number;
   name: string;
   status?: string;
-  brand?: {
-    name?: string;
-  };
-  category?: {
-    name?: string;
-  };
+  brand?: { name?: string };
+  category?: { name?: string };
 };
 
 type Props = {
   products: Product[];
   loading: boolean;
   onEdit: (product: Product) => void;
-  onDelete: (id: number | string) => void;
+  onDelete: (id: number) => void;
 };
 
 export default function ProductTable({

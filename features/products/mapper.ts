@@ -1,18 +1,20 @@
+import type { ProductStatus } from "@/types/product";
+
 type ProductFormData = {
   name: string;
-  description?: string;
+  description?: string | null;
   status?: string;
-  brand?: { id: string | number } | null;
-  brand_id?: string | number | null;
-  category?: { id: string | number } | null;
-  category_id?: string | number | null;
+  brand?: { id: number } | null;
+  brand_id?: number | null;
+  category?: { id: number } | null;
+  category_id?: number | null;
 };
 
 export function mapProductPayload(formData: ProductFormData) {
   return {
     name: formData.name,
-    description: formData.description,
-    status: formData.status || "Active",
+    description: formData.description ?? null,
+    status: (formData.status as ProductStatus) || "Active",
     brand_id: formData.brand?.id ?? formData.brand_id ?? null,
     category_id: formData.category?.id ?? formData.category_id ?? null,
   };
