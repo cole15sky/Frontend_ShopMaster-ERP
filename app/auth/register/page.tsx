@@ -29,7 +29,7 @@ export default function RegisterPage() {
       const data = await registerUser(formData);
       if (data.access) localStorage.setItem("access", data.access);
       if (data.refresh) localStorage.setItem("refresh", data.refresh);
-      router.push("/login");
+      router.push("/login?next=/trial");
     } catch (err: any) {
       setError(err?.response?.data?.detail || "Registration failed. Please try again.");
     } finally {
