@@ -1,10 +1,23 @@
 "use client";
 
-export default function CustomerDashboard() {
-  return (
-      <div className="p-8">
-        <h1 className="text-3xl font-bold">Customer Dashboard</h1>
-        <p>Welcome, Staff! You can view your orders and account info.</p>
-      </div>
-  );
+import { useEffect } from "react";
+import { useAuth } from "@/features/auth/context";
+import { useRouter } from "next/navigation";
+
+export default function DashboardRedirect() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) { router.replace("/login"); return; }
+    const routes: Record<string, string> = {
+      ADMIN: "/dashboard/admin",
+      STAFF: "/dashboard/staff",
+      CUSTOMER: "/dashboard/customer",
+    };
+    router.replace(routes[user.role] || "/login");
+  }, [user, loading, router]);
+
+  return <p className="p-8">Redirecting...</p>;
 }

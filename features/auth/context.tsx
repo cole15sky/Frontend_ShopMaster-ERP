@@ -7,12 +7,11 @@ import type { User } from "@/types/user";
 
 type AuthContextType = {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, redirectTo?: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 };
 
-// ✅ FIXED CONTEXT (this removes `never` issue)
 const AuthContext = createContext<AuthContextType>({
   user: null,
   login: async () => {},
@@ -22,37 +21,35 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const ROLE_ROUTES: Record<string, string> = {
+  ADMIN: "/dashboard/admin",
+  STAFF: "/dashboard/staff",
+  CUSTOMER: "/dashboard/customer",
+};
+
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // LOGIN
-  const login = async (email: string, password: string) => {
-    try {
-      const data = await loginUser(email, password);
+  const login = async (email: string, password: string, redirectTo?: string) => {
+    const data = await loginUser(email, password);
 
-      localStorage.setItem("access", data.access);
-      localStorage.setItem("refresh", data.refresh);
+    localStorage.setItem("access", data.access);
+    localStorage.setItem("refresh", data.refresh);
 
-      const me = await getMe();
-      const userObj: User = me?.data ?? me;
+    const me = await getMe();
+    const userObj: User = me?.data ?? me;
 
-      setUser(userObj);
+    setUser(userObj);
 
-      const role = userObj?.role;
-
-      if (role === "ADMIN") router.push("/dashboard/admin");
-      else if (role === "STAFF") router.push("/dashboard/staff");
-      else router.push("/dashboard/customer");
-
-    } catch (error) {
-      console.error("Login failed:", error);
-      logout();
+    if (redirectTo) {
+      router.push(redirectTo);
+    } else {
+      router.push(ROLE_ROUTES[userObj?.role] ?? "/login");
     }
   };
 
-  // LOGOUT
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
@@ -60,7 +57,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     router.push("/login");
   };
 
-  // AUTO LOGIN
   useEffect(() => {
     const token = localStorage.getItem("access");
 
@@ -75,7 +71,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         setUser(userObj);
       })
       .catch(() => {
-        logout();
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        setUser(null);
       })
       .finally(() => {
         setLoading(false);

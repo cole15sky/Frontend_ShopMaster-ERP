@@ -11,9 +11,22 @@ import {
   Warehouse,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/features/auth/context";
+import { useRouter } from "next/navigation";
 
 
 export default function Home() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleStartTrial = () => {
+    if (user) {
+      router.push("/trial");
+    } else {
+      router.push("/auth/register");
+    }
+  };
+
   const modules = [
     {
       title: "Inventory",
@@ -107,6 +120,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={handleStartTrial}
                 className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold shadow-2xl shadow-indigo-500/30"
               >
                 Start Free Trial
@@ -308,6 +322,7 @@ export default function Home() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={handleStartTrial}
                 className="px-8 py-4 rounded-2xl bg-white text-black font-bold"
               >
                 Get Started

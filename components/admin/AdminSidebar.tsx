@@ -67,9 +67,11 @@ const menuData: MenuSection[] = [
         title: "Inventory",
         icon: Package,
         subItems: [
-          { title: "Products", href: "/dashboard/admin/inventory" },
-          { title: "Stock Alert", href: "/dashboard/admin/inventory/alerts" },
+          { title: "Products", href: "/dashboard/admin/products" },
+          { title: "Variants", href: "/dashboard/admin/inventory/variants" },
+          { title: "Inventory", href: "/dashboard/admin/inventory" },
           { title: "Categories", href: "/dashboard/admin/inventory/categories" },
+          { title: "Brands", href: "/dashboard/admin/inventory/brands" },
         ],
       },
       {
@@ -89,6 +91,9 @@ const menuData: MenuSection[] = [
         title: "Users",
         href: "/dashboard/admin/users",
         icon: Users,
+        subItems: [
+          { title: "All Users", href: "/dashboard/admin/users" },
+        ],
       },
       {
         title: "Analytics",
