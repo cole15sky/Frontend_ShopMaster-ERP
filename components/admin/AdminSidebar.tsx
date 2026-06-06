@@ -92,7 +92,9 @@ const menuData: MenuSection[] = [
         href: "/dashboard/admin/users",
         icon: Users,
         subItems: [
-          { title: "All Users", href: "/dashboard/admin/users" },
+          { title: "Overview", href: "/dashboard/admin/users" },
+          { title: "Staff", href: "/dashboard/admin/users/staff" },
+          { title: "Customers", href: "/dashboard/admin/users/customers" },
         ],
       },
       {

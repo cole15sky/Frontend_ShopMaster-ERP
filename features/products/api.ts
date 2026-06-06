@@ -2,12 +2,12 @@ import API from "@/lib/api";
 import type { Product, ProductVariant, Brand, Category } from "@/types/product";
 
 export const getProducts = async (): Promise<Product[]> => {
-  const res = await API.get("products/");
+  const res = await API.get("products/products/");
   return res.data;
 };
 
 export const getProduct = async (id: number): Promise<Product> => {
-  const res = await API.get(`products/${id}/`);
+  const res = await API.get(`products/products/${id}/`);
   return res.data;
 };
 
@@ -18,7 +18,7 @@ export const createProduct = async (data: {
   description?: string | null;
   status?: "Active" | "Inactive";
 }): Promise<Product> => {
-  const res = await API.post("products/", data);
+  const res = await API.post("products/products/", data);
   return res.data;
 };
 
@@ -32,16 +32,16 @@ export const updateProduct = async (
     status: "Active" | "Inactive";
   }>
 ): Promise<Product> => {
-  const res = await API.patch(`products/${id}/`, data);
+  const res = await API.patch(`products/products/${id}/`, data);
   return res.data;
 };
 
 export const deleteProduct = async (id: number): Promise<void> => {
-  await API.delete(`products/${id}/`);
+  await API.delete(`products/products/${id}/`);
 };
 
 export const getProductVariants = async (id: number): Promise<ProductVariant[]> => {
-  const res = await API.get(`products/${id}/variants/`);
+  const res = await API.get(`products/products/${id}/variants/`);
   return res.data;
 };
 

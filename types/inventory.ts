@@ -8,6 +8,31 @@ export type Inventory = {
   updated_at: string;
 };
 
+export type Unit = "PCS" | "KG" | "G" | "L" | "BOX" | "PACK";
+
+export type StockInPayload = {
+  variant_id: number;
+  quantity: number;
+  unit: Unit;
+  note?: string;
+};
+
+export type StockOutPayload = StockInPayload;
+
+export type StockAdjustPayload = {
+  variant_id: number;
+  new_quantity: number;
+  unit: Unit;
+  note?: string;
+};
+
+export type LowStockItem = {
+  variant_id: number;
+  variant: string;
+  stock: number;
+  low_stock_alert: number;
+};
+
 export type StockHistoryEntry = Record<string, string>;
 
 export type StockHistory = {

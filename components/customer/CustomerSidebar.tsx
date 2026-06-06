@@ -6,6 +6,10 @@ import { useAuth } from "@/features/auth/context";
 import {
   LayoutDashboard,
   Package,
+  ShoppingCart,
+  Heart,
+  Star,
+  MapPin,
   Sparkles,
   Settings,
   LogOut,
@@ -15,6 +19,11 @@ import {
 const navItems = [
   { title: "Dashboard", href: "/dashboard/customer", icon: LayoutDashboard },
   { title: "Browse Products", href: "/dashboard/customer/products", icon: Package },
+  { title: "My Cart", href: "/dashboard/customer/cart", icon: ShoppingCart },
+  { title: "Wishlist", href: "/dashboard/customer/wishlist", icon: Heart },
+  { title: "My Reviews", href: "/dashboard/customer/reviews", icon: Star },
+  { title: "Addresses", href: "/dashboard/customer/addresses", icon: MapPin },
+  { title: "My Profile", href: "/dashboard/customer/profile", icon: User },
   { title: "Free Trial", href: "/trial", icon: Sparkles },
   { title: "Settings", href: "/dashboard/customer/settings", icon: Settings },
 ];

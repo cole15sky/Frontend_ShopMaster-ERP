@@ -195,6 +195,14 @@ function LoginContent() {
               Start Free Trial — Create Account
             </button>
 
+            <button
+              type="button"
+              onClick={() => router.push("/auth/customer-register")}
+              className="w-full py-3 rounded-[1.2rem] border border-green-500/20 bg-green-500/10 hover:bg-green-500/20 text-green-300 text-sm font-medium transition"
+            >
+              Shop with us — Register as Customer
+            </button>
+
             <p className="text-slate-600 text-xs pt-1">
               Secured with Enterprise 256-bit encryption.
             </p>

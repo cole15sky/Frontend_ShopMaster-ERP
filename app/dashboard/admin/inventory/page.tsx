@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RefreshCcw, Plus, Package, AlertTriangle, BarChart3, Edit2, Trash2, X, Save, History } from "lucide-react";
+import {
+  RefreshCcw, Plus, Package, AlertTriangle, BarChart3, X, Save, History,
+  ArrowDownToLine, ArrowUpFromLine, SlidersHorizontal,
+} from "lucide-react";
 import { useInventory } from "@/features/inventory/hooks";
 import StockHistoryModal from "@/components/inventory/StockHistoryModal";
+import StockActionModal, { type StockAction } from "@/components/inventory/StockActionModal";
 import type { Inventory } from "@/types/inventory";
 
 function InventoryModal({
@@ -96,12 +100,18 @@ function InventoryModal({
 }
 
 export default function InventoryPage() {
-  const { inventory, loading, addInventory, editInventory, removeInventory, refresh } = useInventory();
+  const {
+    inventory, lowStock, loading,
+    addInventory, editInventory,
+    doStockIn, doStockOut, doStockAdjust, refresh,
+  } = useInventory();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Inventory | null>(null);
   const [historyItem, setHistoryItem] = useState<Inventory | null>(null);
+  const [stockAction, setStockAction] = useState<{ action: StockAction; item: Inventory } | null>(null);
+  const [tab, setTab] = useState<"all" | "low">("all");
 
-  const lowStockCount = inventory.filter((i) => i.quantity <= i.low_stock_alert).length;
+  const lowStockCount = lowStock.length || inventory.filter((i) => i.quantity <= i.low_stock_alert).length;
   const totalQty = inventory.reduce((sum, i) => sum + i.quantity, 0);
 
   const stats = [
@@ -109,6 +119,13 @@ export default function InventoryPage() {
     { label: "Total Qty", value: totalQty, icon: BarChart3 },
     { label: "Low Stock", value: lowStockCount, icon: AlertTriangle },
   ];
+
+  const runStock = (payload: any) => {
+    if (!stockAction) return Promise.resolve();
+    if (stockAction.action === "in") return doStockIn(payload);
+    if (stockAction.action === "out") return doStockOut(payload);
+    return doStockAdjust(payload);
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0C14] text-white p-6">
@@ -142,6 +159,58 @@ export default function InventoryPage() {
         })}
       </div>
 
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setTab("all")}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tab === "all" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+        >
+          All Inventory
+        </button>
+        <button
+          onClick={() => setTab("low")}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 ${tab === "low" ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}
+        >
+          <AlertTriangle size={14} /> Low Stock
+          {lowStockCount > 0 && (
+            <span className="bg-red-500/30 text-red-300 px-1.5 rounded-full text-xs">{lowStockCount}</span>
+          )}
+        </button>
+      </div>
+
+      {tab === "low" ? (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          {loading ? (
+            <div className="p-10 text-center text-slate-400">Loading low stock...</div>
+          ) : lowStock.length === 0 ? (
+            <div className="p-10 text-center text-slate-400">No low-stock items. All good.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[500px]">
+                <thead>
+                  <tr className="text-left text-xs uppercase text-slate-500 border-b border-slate-800">
+                    <th className="p-4">Variant</th>
+                    <th className="p-4">Current Stock</th>
+                    <th className="p-4">Alert At</th>
+                    <th className="p-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lowStock.map((l) => (
+                    <tr key={l.variant_id} className="border-b border-slate-800 hover:bg-slate-800/30">
+                      <td className="p-4 font-medium">{l.variant}</td>
+                      <td className="p-4"><span className="font-bold text-red-400">{l.stock}</span></td>
+                      <td className="p-4 text-slate-400">{l.low_stock_alert}</td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 text-xs rounded-lg bg-red-500/20 text-red-400">Restock needed</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      ) : (
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-10 text-center text-slate-400">Loading inventory...</div>
@@ -183,25 +252,34 @@ export default function InventoryPage() {
                         {new Date(item.updated_at).toLocaleDateString()}
                       </td>
                       <td className="p-4 text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            onClick={() => setStockAction({ action: "in", item })}
+                            className="text-slate-400 hover:text-green-400 p-1"
+                            title="Stock in"
+                          >
+                            <ArrowDownToLine size={15} />
+                          </button>
+                          <button
+                            onClick={() => setStockAction({ action: "out", item })}
+                            className="text-slate-400 hover:text-red-400 p-1"
+                            title="Stock out"
+                          >
+                            <ArrowUpFromLine size={15} />
+                          </button>
+                          <button
+                            onClick={() => setStockAction({ action: "adjust", item })}
+                            className="text-slate-400 hover:text-amber-400 p-1"
+                            title="Adjust stock"
+                          >
+                            <SlidersHorizontal size={15} />
+                          </button>
                           <button
                             onClick={() => setHistoryItem(item)}
                             className="text-slate-400 hover:text-indigo-400 p-1"
                             title="Stock history"
                           >
                             <History size={15} />
-                          </button>
-                          <button
-                            onClick={() => { setSelected(item); setOpen(true); }}
-                            className="text-slate-400 hover:text-white p-1"
-                          >
-                            <Edit2 size={15} />
-                          </button>
-                          <button
-                            onClick={() => removeInventory(item.id)}
-                            className="text-slate-400 hover:text-red-400 p-1"
-                          >
-                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -213,6 +291,16 @@ export default function InventoryPage() {
           </div>
         )}
       </div>
+      )}
+
+      {stockAction && (
+        <StockActionModal
+          action={stockAction.action}
+          item={stockAction.item}
+          onClose={() => setStockAction(null)}
+          onSubmit={runStock}
+        />
+      )}
 
       {historyItem && (
         <StockHistoryModal

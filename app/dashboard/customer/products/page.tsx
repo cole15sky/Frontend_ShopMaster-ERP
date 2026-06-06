@@ -4,12 +4,22 @@ import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, RefreshCcw, Package, X, ChevronDown,
-  ChevronUp, Tag, Boxes, QrCode, Download,
+  ChevronUp, Tag, Boxes, QrCode, ShoppingCart, Heart,
 } from "lucide-react";
 import { getProducts } from "@/features/products/api";
+import { useActiveCustomer } from "@/features/shop/useActiveCustomer";
+import { useCart, useWishlist } from "@/features/shop/hooks";
 import type { Product, ProductVariant } from "@/types/product";
 
-function VariantCard({ variant }: { variant: ProductVariant }) {
+type VariantActions = {
+  onAddToCart?: (variant: number) => void;
+  onToggleWishlist?: (variant: number) => void;
+  inWishlist?: (variant: number) => boolean;
+  enabled?: boolean;
+};
+
+function VariantCard({ variant, actions }: { variant: ProductVariant; actions?: VariantActions }) {
+  const saved = actions?.inWishlist?.(variant.id) ?? false;
   return (
     <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 flex items-center gap-3">
       <div className="flex-1 min-w-0">
@@ -38,6 +48,24 @@ function VariantCard({ variant }: { variant: ProductVariant }) {
           <QrCode size={14} />
         </a>
       )}
+      {actions?.enabled && variant.is_active && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); actions.onToggleWishlist?.(variant.id); }}
+            className={`p-1.5 transition ${saved ? "text-pink-400" : "text-slate-500 hover:text-pink-400"}`}
+            title={saved ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <Heart size={15} className={saved ? "fill-pink-400" : ""} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); actions.onAddToCart?.(variant.id); }}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition"
+            title="Add to cart"
+          >
+            <ShoppingCart size={13} /> Add
+          </button>
+        </>
+      )}
       <span className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${variant.is_active ? "bg-green-500/20 text-green-400" : "bg-slate-700 text-slate-500"}`}>
         {variant.is_active ? "In Stock" : "Unavailable"}
       </span>
@@ -45,7 +73,7 @@ function VariantCard({ variant }: { variant: ProductVariant }) {
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, actions }: { product: Product; actions?: VariantActions }) {
   const [expanded, setExpanded] = useState(false);
   const activeVariants = product.variants?.filter((v) => v.is_active) ?? [];
   const minPrice = activeVariants.length
@@ -100,7 +128,7 @@ function ProductCard({ product }: { product: Product }) {
                 <p className="text-slate-400 text-sm mb-4 px-1">{product.description}</p>
               )}
               {product.variants?.length > 0 ? (
-                product.variants.map((v) => <VariantCard key={v.id} variant={v} />)
+                product.variants.map((v) => <VariantCard key={v.id} variant={v} actions={actions} />)
               ) : (
                 <p className="text-slate-500 text-sm text-center py-3">No variants available.</p>
               )}
@@ -116,6 +144,37 @@ export default function CustomerProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [toast, setToast] = useState("");
+
+  const { customer } = useActiveCustomer();
+  const { addItem } = useCart(customer?.id);
+  const { has, toggle } = useWishlist(customer?.id);
+
+  const flash = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 1800);
+  };
+
+  const actions = {
+    enabled: !!customer,
+    onAddToCart: async (variant: number) => {
+      try {
+        await addItem(variant);
+        flash("Added to cart");
+      } catch {
+        flash("Failed to add to cart");
+      }
+    },
+    onToggleWishlist: async (variant: number) => {
+      try {
+        await toggle(variant);
+        flash(has(variant) ? "Removed from wishlist" : "Added to wishlist");
+      } catch {
+        flash("Wishlist update failed");
+      }
+    },
+    inWishlist: has,
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -187,8 +246,14 @@ export default function CustomerProductsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} actions={actions} />
           ))}
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-800 border border-slate-700 text-white text-sm px-4 py-2.5 rounded-xl shadow-xl">
+          {toast}
         </div>
       )}
     </div>

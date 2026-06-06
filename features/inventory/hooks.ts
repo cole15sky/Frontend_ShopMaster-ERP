@@ -6,24 +6,51 @@ import {
   createInventory,
   updateInventory,
   deleteInventory,
+  stockIn,
+  stockOut,
+  stockAdjust,
+  getLowStock,
 } from "./api";
-import type { Inventory } from "@/types/inventory";
+import type {
+  Inventory,
+  LowStockItem,
+  StockInPayload,
+  StockOutPayload,
+  StockAdjustPayload,
+} from "@/types/inventory";
 
 export function useInventory() {
   const [inventory, setInventory] = useState<Inventory[]>([]);
+  const [lowStock, setLowStock] = useState<LowStockItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const data = await getInventory();
+      const [data, low] = await Promise.all([getInventory(), getLowStock().catch(() => [])]);
       setInventory(Array.isArray(data) ? data : []);
+      setLowStock(low);
     } catch (err) {
       console.error("Fetch inventory error:", err);
       setInventory([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const doStockIn = async (data: StockInPayload) => {
+    await stockIn(data);
+    await fetchInventory();
+  };
+
+  const doStockOut = async (data: StockOutPayload) => {
+    await stockOut(data);
+    await fetchInventory();
+  };
+
+  const doStockAdjust = async (data: StockAdjustPayload) => {
+    await stockAdjust(data);
+    await fetchInventory();
   };
 
   const addInventory = async (data: { variant: number; quantity: number; low_stock_alert?: number }) => {
@@ -63,5 +90,16 @@ export function useInventory() {
     fetchInventory();
   }, []);
 
-  return { inventory, loading, addInventory, editInventory, removeInventory, refresh: fetchInventory };
+  return {
+    inventory,
+    lowStock,
+    loading,
+    addInventory,
+    editInventory,
+    removeInventory,
+    doStockIn,
+    doStockOut,
+    doStockAdjust,
+    refresh: fetchInventory,
+  };
 }
