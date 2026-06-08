@@ -4,6 +4,9 @@
 *.html
 *_files/
 
+# Local dev docs
+FRONTEND_GUIDE.md
+
 # dependencies
 /node_modules
 /.pnp

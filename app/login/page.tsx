@@ -180,8 +180,32 @@ function LoginContent() {
             </motion.button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-slate-500 text-sm">Secured with Enterprise 256-bit encryption.</p>
+          <div className="mt-6 space-y-3 text-center">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-slate-800" />
+              <span className="text-slate-600 text-xs">OR</span>
+              <div className="flex-1 h-px bg-slate-800" />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => router.push("/auth/register")}
+              className="w-full py-3 rounded-[1.2rem] border border-white/10 bg-white/5 hover:bg-white/10 text-white text-sm font-medium transition"
+            >
+              Start Free Trial — Create Account
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.push("/auth/customer-register")}
+              className="w-full py-3 rounded-[1.2rem] border border-green-500/20 bg-green-500/10 hover:bg-green-500/20 text-green-300 text-sm font-medium transition"
+            >
+              Shop with us — Register as Customer
+            </button>
+
+            <p className="text-slate-600 text-xs pt-1">
+              Secured with Enterprise 256-bit encryption.
+            </p>
           </div>
         </div>
       </motion.div>
