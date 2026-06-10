@@ -29,6 +29,7 @@ export type CustomerRegisterPayload = {
   full_name: string;
   password: string;
   phone?: string;
+  password2: string;
 };
 
 // Customer profile update — backend CustomerUpdate serializer (email is read-only)

@@ -34,8 +34,8 @@ export default function ProductsPage() {
   const getPrice = (product: Product) => {
     if (!product.variants?.length) return 0;
 
-    const v = product.variants[0];
-    return v.final_price || v.price;
+    // const v = product.variants[0];
+    // return v.final_price || v.price;
   };
 
   // ✅ FIXED IMAGE LOGIC (ProductImage relation)

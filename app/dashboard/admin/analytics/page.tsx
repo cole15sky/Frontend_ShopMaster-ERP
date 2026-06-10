@@ -48,7 +48,7 @@ export default function AnalyticsPage() {
   const { products, inventory, users, variants } = data;
 
   /* ── derived stats ── */
-  const activeProducts = products.filter((p) => p.status === "Active").length;
+  const activeProducts = products.filter((p) => p.status === "ACTIVE").length;
   const inactiveProducts = products.length - activeProducts;
   const totalStock = inventory.reduce((s, i) => s + i.quantity, 0);
   const lowStockItems = inventory.filter((i) => i.quantity <= i.low_stock_alert);

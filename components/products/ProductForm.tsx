@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Save, Plus, Trash2, Package, ImageIcon, Tag, Star, UploadCloud } from "lucide-react";
 import { getBrands, getCategories } from "@/features/products/api";
 import { createVariant } from "@/features/variants/api";
+import { Gender, Size } from "@/types/product";
 
 type VariantDraft = {
   size: string;
@@ -142,14 +143,14 @@ export default function ProductForm({ product, onSave, onClose }: Props) {
             .map((v) =>
               createVariant({
                 product: createdProduct.id,
-                size: v.size,
+                size: v.size as Size,
                 color: v.color,
                 sku: v.sku,
                 price: v.price,
                 discount_price: v.discount_price || null,
                 cost_price: v.cost_price || null,
                 barcode: v.barcode || null,
-                gender: v.gender,
+                gender: v.gender as Gender,
                 is_active: true,
               })
             )

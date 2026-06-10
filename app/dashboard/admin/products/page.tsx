@@ -46,7 +46,7 @@ export default function ProductsPage() {
     },
     {
       label: "Active Stock",
-      value: products.filter((p: any) => p.status === "Active").length,
+      value: products.filter((p: any) => p.status === "ACTIVE").length,
       icon: BarChart3,
     },
     {
