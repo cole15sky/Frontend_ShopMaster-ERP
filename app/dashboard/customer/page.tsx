@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 
 const TRIAL_FEATURES = [
-  { icon: Package, title: "Browse Products", desc: "Explore the full product catalog with variant details.", href: "/dashboard/customer/products" },
+  { icon: Package, title: "Browse Products", desc: "Explore the full product catalog with variant details.", href: "/products" },
   { icon: QrCode, title: "QR Codes", desc: "View product QR codes for quick scanning.", href: "/dashboard/customer/products" },
   { icon: BarChart3, title: "Pricing & Discounts", desc: "View live pricing, discounts, and cost breakdowns.", href: "/dashboard/customer/products" },
   { icon: ShoppingCart, title: "All Variants", desc: "Browse all SKUs by size, gender, and color.", href: "/dashboard/customer/products" },

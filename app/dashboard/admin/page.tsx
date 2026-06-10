@@ -37,7 +37,7 @@ export default function AdminDashboard() {
         const u = users as User[];
         setStats({
           products: p.length,
-          activeProducts: p.filter((x) => x.status === "Active").length,
+          activeProducts: p.filter((x) => x.status === "ACTIVE").length,
           users: u.length,
           inventory: inv.reduce((s, i) => s + i.quantity, 0),
           lowStock: inv.filter((i) => i.quantity <= i.low_stock_alert).length,

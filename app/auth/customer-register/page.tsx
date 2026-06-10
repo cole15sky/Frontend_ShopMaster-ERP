@@ -33,6 +33,7 @@ export default function CustomerRegisterPage() {
         full_name: form.full_name,
         email: form.email,
         password: form.password,
+        password2: form.password,
         phone: form.phone || undefined,
       });
       setSuccess(true);

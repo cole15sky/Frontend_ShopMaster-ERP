@@ -52,7 +52,7 @@ function ProductCard({ product }: { product: Product }) {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`px-2 py-1 text-xs rounded-lg ${product.status === "Active" ? "bg-green-500/20 text-green-400" : "bg-slate-700 text-slate-400"}`}>
+          <span className={`px-2 py-1 text-xs rounded-lg ${product.status === "ACTIVE" ? "bg-green-500/20 text-green-400" : "bg-slate-700 text-slate-400"}`}>
             {product.status}
           </span>
           <span className="text-xs text-slate-500 flex items-center gap-1">
@@ -103,7 +103,9 @@ function ProductCard({ product }: { product: Product }) {
 export default function StaffProductsPage() {
   const { products, loading, refresh } = useProducts();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
+type StatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
+
+const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -111,7 +113,7 @@ export default function StaffProductsPage() {
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         (p.brand?.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
         (p.category?.name ?? "").toLowerCase().includes(search.toLowerCase());
-      const matchStatus = statusFilter === "All" || p.status === statusFilter;
+      const matchStatus = statusFilter === "ALL" || p.status === (statusFilter === "ACTIVE" ? "ACTIVE" : "INACTIVE");
       return matchSearch && matchStatus;
     });
   }, [products, search, statusFilter]);
@@ -145,7 +147,7 @@ export default function StaffProductsPage() {
           )}
         </div>
         <div className="flex gap-2">
-          {(["All", "Active", "Inactive"] as const).map((s) => (
+          {(["ALL", "ACTIVE", "INACTIVE"] as const).map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}

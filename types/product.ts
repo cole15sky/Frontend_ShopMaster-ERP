@@ -12,7 +12,7 @@ export type Category = {
   is_active: boolean;
 };
 
-export type ProductStatus = "Active" | "Inactive";
+export type ProductStatus = "ACTIVE" | "INACTIVE" | "DRAFT";
 export type Gender = "Male" | "Female" | "Unisex";
 export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 
@@ -44,4 +44,12 @@ export type Product = {
   created_at: string;
   updated_at: string;
   variants: ProductVariant[];
+  images: ProductImage[];
+};
+
+export type ProductImage = {
+  id: number;
+  product?: number;
+  image: string;
+  is_primary: boolean;
 };

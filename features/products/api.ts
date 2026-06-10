@@ -1,7 +1,7 @@
 import API from "@/lib/api";
 import type { Product, ProductVariant, Brand, Category } from "@/types/product";
 
-export const getProducts = async (): Promise<Product[]> => {
+export const getProducts = async () => {
   const res = await API.get("products/products/");
   return res.data;
 };
@@ -16,7 +16,7 @@ export const createProduct = async (data: {
   brand_id?: number | null;
   category_id?: number | null;
   description?: string | null;
-  status?: "Active" | "Inactive";
+  status?: "ACTIVE" | "INACTIVE" | "DRAFT";
 }): Promise<Product> => {
   const res = await API.post("products/products/", data);
   return res.data;
@@ -29,7 +29,7 @@ export const updateProduct = async (
     brand_id: number | null;
     category_id: number | null;
     description: string | null;
-    status: "Active" | "Inactive";
+    status: "ACTIVE" | "INACTIVE" | "DRAFT";
   }>
 ): Promise<Product> => {
   const res = await API.patch(`products/products/${id}/`, data);
@@ -52,5 +52,10 @@ export const getBrands = async (): Promise<Brand[]> => {
 
 export const getCategories = async (): Promise<Category[]> => {
   const res = await API.get("products/categories/");
+  return res.data;
+};
+
+export const getImages = async (productId: number): Promise<{ id: number; image: string; is_primary: boolean }[]> => {
+  const res = await API.get(`products/products/${productId}/images/`);
   return res.data;
 };
