@@ -16,7 +16,7 @@ export const createProduct = async (data: {
   brand_id?: number | null;
   category_id?: number | null;
   description?: string | null;
-  status?: "Active" | "Inactive";
+  status?: "ACTIVE" | "INACTIVE" | "DRAFT";
 }): Promise<Product> => {
   const res = await API.post("products/products/", data);
   return res.data;
@@ -29,7 +29,7 @@ export const updateProduct = async (
     brand_id: number | null;
     category_id: number | null;
     description: string | null;
-    status: "Active" | "Inactive";
+    status: "ACTIVE" | "INACTIVE" | "DRAFT";
   }>
 ): Promise<Product> => {
   const res = await API.patch(`products/products/${id}/`, data);
